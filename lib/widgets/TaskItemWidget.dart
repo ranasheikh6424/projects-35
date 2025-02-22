@@ -85,18 +85,20 @@ class TaskItemWidget extends StatelessWidget {
           content: const Text('Are you sure you want to delete this task?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(), // Close dialog
+              onPressed: () => Get.back(), // Close dialog
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop(); // Close dialog before deletion
+                Get.back(); // Close dialog before deletion
                 bool success = await _deleteController.deleteTask(taskId);
                 if (success) {
                   onTaskDeleted(); // Auto-refresh task list
                   Get.snackbar(
+                    //borderColor: Colors.amberAccent,
                     "Success",
                     "Task deleted successfully!",
+                    // backgroundGradient: Gradient.lerp(a, b, t),
                     snackPosition: SnackPosition.BOTTOM,
                     backgroundColor: Colors.green,
                     colorText: Colors.white,
@@ -119,7 +121,6 @@ class TaskItemWidget extends StatelessWidget {
     );
   }
 
-// Status Update Bottom Sheet
   void _showUpdateStatusBottomSheet(BuildContext context) {
     String selectedStatus = taskStatus;
     final UpdateTaskController _taskController =
@@ -155,7 +156,7 @@ class TaskItemWidget extends StatelessWidget {
                     _statusRadioTile("New", selectedStatus, (value) {
                       selectedStatus = value!;
                     }),
-                    _statusRadioTile("In Progress", selectedStatus, (value) {
+                    _statusRadioTile("Progress", selectedStatus, (value) {
                       selectedStatus = value!;
                     }),
                     _statusRadioTile("Completed", selectedStatus, (value) {
@@ -165,20 +166,25 @@ class TaskItemWidget extends StatelessWidget {
                       selectedStatus = value!;
                     }),
                     const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await _taskController.updateTaskStatus(
-                            taskId, selectedStatus);
-                        Get.back(); // Close Bottom Sheet
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text("Update Status"),
-                    ),
+                    Obx(() {
+                      return _taskController.isLoading.value
+                          ? const CircularProgressIndicator()
+                          : ElevatedButton(
+                              onPressed: () async {
+                                await _taskController.updateTaskStatus(
+                                    taskId, selectedStatus);
+                                onTaskUpdated(); // Refresh task list
+                                Get.back(); // Close Bottom Sheet
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text("Update Status"),
+                            );
+                    }),
                   ],
                 ),
               ),
@@ -205,7 +211,7 @@ class TaskItemWidget extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'new':
         return Colors.blue;
-      case 'in progress':
+      case 'progress':
         return Colors.orange;
       case 'completed':
         return Colors.green;

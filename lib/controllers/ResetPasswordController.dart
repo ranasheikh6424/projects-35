@@ -6,7 +6,7 @@ import 'Auth_Controller.dart';
 
 class ResetPasswordController extends GetxController {
   var inProgress = false.obs;
-  var errorMessage = ''.obs; // ✅ RxString
+  var errorMessage = ''.obs;
 
   Future<bool> resetPassword(
       String email, String password, String otp, String cPassword) async {
